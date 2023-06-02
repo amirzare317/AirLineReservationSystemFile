@@ -17,6 +17,8 @@ public class Passenger extends Files {
     // This array is used to show filtering. Note that the maxim length of array is equal to length of flights.
     Boolean[] showFilterItems;
 
+    int userIdentifier;
+
     // This matrix is created for getting all the information of passengers(likely a local database).
     // Each row is known as a passenger.
     // In each column the data of each passenger including the tickets will be stored.
@@ -104,11 +106,10 @@ public class Passenger extends Files {
                     System.out.println("Would you like to see flight table once again? Y or N");
                     string = input.next();
                     if (string.equalsIgnoreCase("Y")) {
-                        showAllFlights(); //todo this is null therefor ...
+                        showAllFlights();
                     }
                     System.out.println("Enter your intended flight ID to book it.");
                     string = input.next();
-                    bookTickets(string);
                     if (isEnoughSeat(string)) {
                         if (isEnoughCharge(string)) {
                             bookTickets(string);
@@ -119,11 +120,44 @@ public class Passenger extends Files {
                 case 4:
                     System.out.println("Cancelling...");
                     System.out.println("This is all the flights you have reserved before...");
-                    for (int j = 0; j < infoAdmin.flights.length; j++) {
-                        if (passengerFlightDetail[i - 1][j] != null) {
-                            System.out.println("Your reservation code is: " + passengerFlightDetail[i - 1][j]);
+                    System.out.println("Length is: " + rfileUsers.length());
+                    System.out.println("Amir is: " + rfileUsers.getFilePointer());
+
+
+                    for (int j = 0; j < rfileTickets.length() / 30; j++) {
+                        rfileTickets.seek(0);
+                        rfileUsers.seek(userIdentifier * 64L + 30);
+                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))) {
+                            rfileTickets.seek(rfileTickets.getFilePointer() - 30);
+                            for (int k = 0; k < rfileFlights.length() / 160; k++) {
+                                if (fixToRead(rfileTickets).contains("Z")) { //fixToRead(rfileFlights)
+                                    rfileFlights.seek(rfileFlights.getFilePointer());
+                                    rfileTickets.seek(rfileTickets.getFilePointer() - 30);
+                                    System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15d %-15d\n", fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), rfileFlights.readInt(), rfileFlights.readInt());
+                                }
+                            }
                         }
+
                     }
+
+
+//                    rfileTickets.seek(0);
+//                    rfileUsers.seek(30);
+//
+//                    for (int j = 0; j < rfileTickets.length() / 30; j++) {
+//                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))) {
+//                            rfileTickets.seek(rfileTickets.getFilePointer() - 30);
+//                            for (int k = 0; k < rfileFlights.length() / 160; k++) {
+//                                rfileFlights.seek(k * 160L);
+//                                if (fixToRead(rfileTickets).contains(fixToRead(rfileFlights))){
+//                                    rfileFlights.seek(k * 160L);
+//                                    System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15d %-15d\n", fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), rfileFlights.readInt(), rfileFlights.readInt());
+//                                }
+//                            }
+//                        }
+//                        rfileTickets.seek(rfileFlights.getFilePointer() - 30);
+//                        rfileUsers.seek(rfileUsers.getFilePointer() - 30);
+//                    }
                     System.out.println("Enter your intended flight ID to cancel it.");
                     str = input.next();
                     System.out.println("Enter your reservation code to cancel it.");
@@ -180,10 +214,11 @@ public class Passenger extends Files {
         // The structure of ticketID is: UserPassword + | + FlightID + | + # + Free seats
         for (int i = 0; i < rfileFlights.length() / 160; i++) {
             rfileFlights.seek(n * 160L);
-            if (fixToRead(rfileFlights).equals(string)){
+            if (fixToRead(rfileFlights).equals(string)) {
                 rfileUsers.seek(rfileUsers.getFilePointer() - 34);
                 rfileFlights.seek(rfileFlights.getFilePointer() + 124);
-                rfileTickets.writeChars(fixToWrite(fixToRead(rfileUsers) + "|" +returnFlightId(string) +  "|#" + rfileFlights.readInt()));
+                rfileTickets.writeChars(fixToWrite(fixToRead(rfileUsers) + "|" + returnFlightId(string) + "|#" + rfileFlights.readInt()));
+
             }
             n++;
         }
@@ -202,7 +237,7 @@ public class Passenger extends Files {
     public String returnFlightId(String string) throws IOException {
         for (int i = 0; i < rfileFlights.length() / 160; i++) {
             rfileFlights.seek((i * 160L));
-            if (fixToRead(rfileFlights).equals(string)){
+            if (fixToRead(rfileFlights).equals(string)) {
                 return string;
             }
         }
@@ -255,18 +290,16 @@ public class Passenger extends Files {
     public boolean isEnoughCharge(String string) throws IOException {
         int n = 0;
         for (int k = 0; k < rfileFlights.length() / 160; k++) {
-            System.out.println("THe location of amir: " + rfileUsers.getFilePointer());
             rfileFlights.seek(n * 160L);
             if (fixToRead(rfileFlights).equals(string)) {
                 rfileFlights.seek((n * 160L) + 150);
-                rfileTickets.seek(60);
-                System.out.println(rfileTickets.readInt());
-                System.out.println(rfileFlights.readInt());
-                if (rfileTickets.readInt() >= rfileFlights.readInt()) {
+                rfileUsers.seek(60);
+                if (rfileUsers.readInt() >= rfileFlights.readInt()) {
                     return true;
                 } else {
+                    rfileFlights.seek(rfileFlights.getFilePointer() - 4);
                     while (true) {
-                        System.out.println("Your charge is not enough -> If you want to charge enter 'Y' to charge your account. At least you need " + infoAdmin.flights[k].getPrice());
+                        System.out.println("Your charge is not enough -> If you want to charge enter 'Y' to charge your account. At least you need " + rfileFlights.readInt());
                         string = input.next();
                         if (string.equalsIgnoreCase("Y")) {
                             System.out.println("Enter the amount of money you want to charge");
@@ -278,7 +311,7 @@ public class Passenger extends Files {
                             rfileUsers.seek(rfileUsers.getFilePointer() - 4);
                             rfileFlights.seek(rfileFlights.getFilePointer() - 4);
 
-                            if (rfileTickets.readInt() >= rfileFlights.readInt()) {
+                            if (rfileUsers.readInt() >= rfileFlights.readInt()) {
                                 //Set the new amount of charge
                                 rfileUsers.seek(rfileUsers.getFilePointer() - 4);
                                 rfileFlights.seek(rfileFlights.getFilePointer() - 4);
@@ -429,9 +462,11 @@ public class Passenger extends Files {
 
     public boolean isRegisteredBefore(String userName, String password) throws IOException {
         rfileUsers.seek(0);
+
         for (int j = 0; j < rfileUsers.length() / 64; j++) {
             if (fixToRead(rfileUsers).equals(userName) && fixToRead(rfileUsers).equals(password)) {
                 rfileUsers.readInt();
+                userIdentifier = j;
                 return true;
             }
         }
@@ -450,17 +485,6 @@ public class Passenger extends Files {
 //        }
 //    }
 
-    /**
-     * A boolean array will be new up to size of flights.
-     * As default all the index of array is false.
-     * If you want to filter any items of flight, it will make it true.
-     */
-    public void startFilter() {
-        showFilterItems = new Boolean[infoAdmin.flights.length];
-        for (int i = 0; i < showFilterItems.length; i++) {
-            showFilterItems[i] = false;
-        }
-    }
 
     /**
      * Filtering origin of flight.
@@ -474,10 +498,7 @@ public class Passenger extends Files {
             rfileFlights.seek((n * 160L) + 30);
             if ((fixToRead(rfileFlights).equals(string)) && (!string.equalsIgnoreCase("N"))) {
                 rfileFlights.seek(((n + 1) * 160L) - 1);
-                System.out.println("the pointer is: " + rfileFlights.getFilePointer());
                 rfileFlights.writeBoolean(true);
-                rfileFlights.seek(rfileFlights.getFilePointer() - 1);
-                System.out.println(rfileFlights.readBoolean());
             }
             n++;
         }
@@ -624,7 +645,6 @@ public class Passenger extends Files {
 
             case 2:
                 System.out.println("Filtering by some items");
-                startFilter();
                 filterOriginMixed();
                 filterDestinationMixed();
                 filterPriceMixed();
