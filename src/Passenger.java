@@ -120,44 +120,33 @@ public class Passenger extends Files {
                 case 4:
                     System.out.println("Cancelling...");
                     System.out.println("This is all the flights you have reserved before...");
-                    System.out.println("Length is: " + rfileUsers.length());
-                    System.out.println("Amir is: " + rfileUsers.getFilePointer());
-
-
+                    rfileTickets.seek(0);
                     for (int j = 0; j < rfileTickets.length() / 30; j++) {
-                        rfileTickets.seek(0);
-                        rfileUsers.seek(userIdentifier * 64L + 30);
-                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))) {
-                            rfileTickets.seek(rfileTickets.getFilePointer() - 30);
-                            for (int k = 0; k < rfileFlights.length() / 160; k++) {
-                                if (fixToRead(rfileTickets).contains("Z")) { //fixToRead(rfileFlights)
-                                    rfileFlights.seek(rfileFlights.getFilePointer());
-                                    rfileTickets.seek(rfileTickets.getFilePointer() - 30);
+                        String str = "";
+                        str = fixToRead(rfileTickets);
+                        rfileUsers.seek(userIdentifier * 60L + 30);
+                        if (str.contains(fixToRead(rfileUsers))) {
+
+                            for (int i = 0; i < rfileFlights.length() / 160; i++) {
+                                rfileFlights.seek(i * 160L);
+                                if (str.contains(fixToRead(rfileFlights))) {
+                                    rfileFlights.seek(i * 160L);
                                     System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15d %-15d\n", fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), rfileFlights.readInt(), rfileFlights.readInt());
                                 }
                             }
                         }
-
                     }
 
-
-//                    rfileTickets.seek(0);
-//                    rfileUsers.seek(30);
-//
-//                    for (int j = 0; j < rfileTickets.length() / 30; j++) {
-//                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))) {
-//                            rfileTickets.seek(rfileTickets.getFilePointer() - 30);
-//                            for (int k = 0; k < rfileFlights.length() / 160; k++) {
-//                                rfileFlights.seek(k * 160L);
-//                                if (fixToRead(rfileTickets).contains(fixToRead(rfileFlights))){
-//                                    rfileFlights.seek(k * 160L);
-//                                    System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15d %-15d\n", fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), rfileFlights.readInt(), rfileFlights.readInt());
-//                                }
-//                            }
-//                        }
-//                        rfileTickets.seek(rfileFlights.getFilePointer() - 30);
-//                        rfileUsers.seek(rfileUsers.getFilePointer() - 30);
-//                    }
+                    System.out.println("---------------------------------------------------------------------------------------------------");
+                    System.out.println("These are all of your reservation codes: ");
+                    rfileTickets.seek(0);
+                    for (int j = 0; j < rfileTickets.length() / 30; j++) {
+                        rfileUsers.seek(userIdentifier * 60L + 30);
+                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))){
+                            rfileTickets.seek(rfileTickets.getFilePointer() - 30);
+                            System.out.println(fixToRead(rfileTickets));
+                        }
+                    }
                     System.out.println("Enter your intended flight ID to cancel it.");
                     str = input.next();
                     System.out.println("Enter your reservation code to cancel it.");
@@ -250,14 +239,22 @@ public class Passenger extends Files {
      * @param string By giving an string to the method, it will search for the FlightID which is equal to the string.
      *               By cancelling, the ticketID will initialize to null.
      */
-    public void ticketCancellation(String string) {
+    public void ticketCancellation(String string) throws IOException {
         int flag = 0;
-        for (int j = 0; j < 15; j++) {
-            if (passengerFlightDetail[i - 1][j] != null && passengerFlightDetail[i - 1][j].equals(string)) {
-                passengerFlightDetail[i - 1][j] = null;
-                System.out.println("Your flight is canceled");
-                flag = 1;
+        int n = 0;
+        rfileTickets.seek(0);
+        for (int i = 0; i < (rfileTickets.length() / 30); i++) {
+            if (rfileTickets.length() <= 30){
+                rfileTickets.setLength(0);
             }
+            String reservationCode = fixToRead(rfileTickets);
+            if (reservationCode.equals(string)){
+                for (int j = 0; j < ((rfileTickets.length() / 30) - n) - 1; j++) {
+                    String str = fixToRead(rfileTickets);
+                }
+            }
+            flag = 1;
+            n++;
         }
         if (flag == 0) {
             System.out.println("You haven't register this flight before.");
@@ -269,11 +266,18 @@ public class Passenger extends Files {
      * It will search in matrix and if ticketID contains FlightID, will represent the flight info.
      */
     public void showBookedFlights() throws IOException {
-        for (int j = 0; j < infoAdmin.flights.length; j++) {
-            if (passengerFlightDetail[i - 1][j] != null) {
-                for (int k = 0; k < infoAdmin.flights.length; k++) {
-                    if ((infoAdmin.flights[k] != null) && (passengerFlightDetail[i - 1][j].contains(infoAdmin.flights[k].getFlightId()))) {
-                        printFlight(k);
+        rfileTickets.seek(0);
+        for (int j = 0; j < rfileTickets.length() / 30; j++) {
+            String str = "";
+            str = fixToRead(rfileTickets);
+            rfileUsers.seek(userIdentifier * 60L + 30);
+            if (str.contains(fixToRead(rfileUsers))) {
+
+                for (int i = 0; i < rfileFlights.length() / 160; i++) {
+                    rfileFlights.seek(i * 160L);
+                    if (str.contains(fixToRead(rfileFlights))) {
+                        rfileFlights.seek(i * 160L);
+                        System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15d %-15d\n", fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), fixToRead(rfileFlights), rfileFlights.readInt(), rfileFlights.readInt());
                     }
                 }
             }
@@ -315,8 +319,9 @@ public class Passenger extends Files {
                                 //Set the new amount of charge
                                 rfileUsers.seek(rfileUsers.getFilePointer() - 4);
                                 rfileFlights.seek(rfileFlights.getFilePointer() - 4);
-
-                                rfileUsers.writeInt(rfileUsers.readInt() - rfileFlights.readInt());
+                                int newCharge = rfileUsers.readInt() - rfileFlights.readInt();
+                                rfileUsers.seek(rfileUsers.getFilePointer() - 4);
+                                rfileUsers.writeInt(newCharge);
                                 rfileUsers.seek(rfileUsers.getFilePointer() - 4);
                                 System.out.println("Now your charge is: " + rfileUsers.readInt());
                                 return true;
@@ -452,7 +457,7 @@ public class Passenger extends Files {
             // Password
             rfileUsers.writeChars(fixToWrite(password)); // 30
             // The default charge = 0
-            rfileUsers.writeInt(0); // 4
+            rfileUsers.writeInt(0);
         } else {
             rfileUsers = new RandomAccessFile("users.dat", "rw");
         }
