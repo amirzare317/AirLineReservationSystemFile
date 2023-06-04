@@ -152,8 +152,8 @@ public class Passenger extends Files {
                     System.out.println("Enter your reservation code to cancel it.");
                     string = input.next();
                     ticketCancellation(string);
-                    resetCharge(string);
-                    resetSeat(string);
+                    resetCharge(str);
+                    resetSeat(str);
                     resetAllow(str);
                     setShowPassengerMenuAgain();
                     break;
@@ -207,6 +207,12 @@ public class Passenger extends Files {
                 rfileUsers.seek(rfileUsers.getFilePointer() - 34);
                 rfileFlights.seek(rfileFlights.getFilePointer() + 124);
                 rfileTickets.writeChars(fixToWrite(fixToRead(rfileUsers) + "|" + returnFlightId(string) + "|#" + rfileFlights.readInt()));
+                rfileFlights.seek(((n + 1) * 160L) - 2);
+                rfileFlights.writeBoolean(true);
+                System.out.println(rfileFlights.getFilePointer());
+                rfileFlights.seek(rfileFlights.getFilePointer() - 1);
+                System.out.println(rfileFlights.getFilePointer());
+                System.out.println(rfileFlights.readBoolean());
 
             }
             n++;
@@ -250,12 +256,16 @@ public class Passenger extends Files {
             String reservationCode = fixToRead(rfileTickets);
             if (reservationCode.equals(string)){
                 for (int j = 0; j < ((rfileTickets.length() / 30) - n) - 1; j++) {
+                    rfileTickets.seek((n + 1) * 30L);
                     String str = fixToRead(rfileTickets);
+                    rfileTickets.seek(n * 30L);
+                    rfileTickets.writeChars(fixToWrite(str));
                 }
             }
             flag = 1;
             n++;
         }
+        rfileTickets.setLength(n * 30L);
         if (flag == 0) {
             System.out.println("You haven't register this flight before.");
         }
@@ -341,13 +351,15 @@ public class Passenger extends Files {
      * @param str By giving an string to the method, it will search whole matrix to check whether that flight is available or not.
      *            If there wasn't that flight, admin will be able to update or delete that flight.
      */
-    public void resetAllow(String str) {
-        for (int n = 0; n < 15; n++) {
-            for (int m = 0; m < 30; m++) {
-                if (passengerFlightDetail[n][m] != null && (!passengerFlightDetail[n][m].contains(str))) {
-                    infoAdmin.flights[findFlightIndex(str)].setAllow(true);
-                }
+    public void resetAllow(String str) throws IOException {
+        int n = 0;
+        for (int i = 0; i < rfileFlights.length() / 160; i++) {
+            rfileFlights.seek(n * 160L);
+            if (fixToRead(rfileFlights).equals(str)){
+                rfileFlights.seek(((n + 1) * 160L) - 2);
+                rfileFlights.writeBoolean(false);
             }
+            n++;
         }
     }
 
@@ -408,11 +420,19 @@ public class Passenger extends Files {
      *
      * @param string By giving an string to the method, it will search for the FlightID which is equal to the string.
      */
-    public void resetCharge(String string) {
-        for (int k = 0; k < infoAdmin.flights.length; k++) {
-            if (infoAdmin.flights[k] != null && infoAdmin.flights[k].getFlightId().equals(string)) {
-                passengerUser[i - 1].setCharge(passengerUser[i - 1].getCharge() + infoAdmin.flights[k].getPrice());
+    public void resetCharge(String string) throws IOException {
+
+        int n = 0;
+        for (int i = 0; i < rfileFlights.length() / 160; i++) {
+            rfileFlights.seek(n * 160L);
+            if (fixToRead(rfileFlights).equals(string)){
+                rfileFlights.seek((n * 160L) + 154);
+                rfileUsers.seek(userIdentifier * 64L + 60);
+                int charge = rfileUsers.readInt() - rfileFlights.readInt();
+                rfileUsers.seek(rfileUsers.getFilePointer() - 4);
+                rfileUsers.writeInt(charge);
             }
+            n++;
         }
     }
 
@@ -421,11 +441,14 @@ public class Passenger extends Files {
      *
      * @param string By giving an string to the method, it will search for the FlightID which is equal to the string.
      */
-    public void resetSeat(String string) {
-        for (int k = 0; k < infoAdmin.flights.length; k++) {
-            if (infoAdmin.flights[k] != null && infoAdmin.flights[k].getFlightId().equals(string)) {
-                infoAdmin.flights[k].setSeats(infoAdmin.flights[k].getSeats() + 1);
-            }
+    public void resetSeat(String string) throws IOException {
+        int n = 0;
+        for (int i = 0; i < rfileFlights.length() / 160; i++) {
+            rfileFlights.seek((n * 160L) + 154);
+            int seat = rfileFlights.readInt();
+            rfileFlights.seek(rfileFlights.getFilePointer() - 4);
+            rfileFlights.writeInt(seat);
+            n++;
         }
 
     }

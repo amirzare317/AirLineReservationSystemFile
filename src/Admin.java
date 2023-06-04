@@ -99,38 +99,38 @@ public class Admin extends Files {
 
 //        rfileFlights.setLength(0);
         // Note that the first boolean value is for search and the second boolean value is for allowing to canceling or updating for admin.
-        // Info of 1st flight
-        rfileFlights.writeChars(fixToWrite("WX-12"));
-        rfileFlights.writeChars(fixToWrite("Yazd"));
-        rfileFlights.writeChars(fixToWrite("Tehran"));
-        rfileFlights.writeChars(fixToWrite("1401-12-10"));
-        rfileFlights.writeChars(fixToWrite("12:30"));
-        rfileFlights.writeInt(700_000);
-        rfileFlights.writeInt(51);
-        rfileFlights.writeBoolean(false); // 1byte
-        rfileFlights.writeBoolean(false);
-
-        // Info of 2nd flight
-        rfileFlights.writeChars(fixToWrite("WZ-15"));
-        rfileFlights.writeChars(fixToWrite("Mashhad"));
-        rfileFlights.writeChars(fixToWrite("Ahvaz"));
-        rfileFlights.writeChars(fixToWrite("1401-12-11"));
-        rfileFlights.writeChars(fixToWrite("08:00"));
-        rfileFlights.writeInt(900_000);
-        rfileFlights.writeInt(245);
-        rfileFlights.writeBoolean(false); // 1byte
-        rfileFlights.writeBoolean(false);
-
-        // Info of 3rd flight
-        rfileFlights.writeChars(fixToWrite("BG-22")); //30
-        rfileFlights.writeChars(fixToWrite("Shiraz")); //30
-        rfileFlights.writeChars(fixToWrite("Tabriz")); //30
-        rfileFlights.writeChars(fixToWrite("1401-12-12")); //30
-        rfileFlights.writeChars(fixToWrite("22:30")); //30
-        rfileFlights.writeInt(1_100_000); //4
-        rfileFlights.writeInt(12); //4
-        rfileFlights.writeBoolean(false); // 1byte
-        rfileFlights.writeBoolean(false);
+//        // Info of 1st flight
+//        rfileFlights.writeChars(fixToWrite("WX-12"));
+//        rfileFlights.writeChars(fixToWrite("Yazd"));
+//        rfileFlights.writeChars(fixToWrite("Tehran"));
+//        rfileFlights.writeChars(fixToWrite("1401-12-10"));
+//        rfileFlights.writeChars(fixToWrite("12:30"));
+//        rfileFlights.writeInt(700_000);
+//        rfileFlights.writeInt(51);
+//        rfileFlights.writeBoolean(false); // 1byte
+//        rfileFlights.writeBoolean(false);
+//
+//        // Info of 2nd flight
+//        rfileFlights.writeChars(fixToWrite("WZ-15"));
+//        rfileFlights.writeChars(fixToWrite("Mashhad"));
+//        rfileFlights.writeChars(fixToWrite("Ahvaz"));
+//        rfileFlights.writeChars(fixToWrite("1401-12-11"));
+//        rfileFlights.writeChars(fixToWrite("08:00"));
+//        rfileFlights.writeInt(900_000);
+//        rfileFlights.writeInt(245);
+//        rfileFlights.writeBoolean(false); // 1byte
+//        rfileFlights.writeBoolean(false);
+//
+//        // Info of 3rd flight
+//        rfileFlights.writeChars(fixToWrite("BG-22")); //30
+//        rfileFlights.writeChars(fixToWrite("Shiraz")); //30
+//        rfileFlights.writeChars(fixToWrite("Tabriz")); //30
+//        rfileFlights.writeChars(fixToWrite("1401-12-12")); //30
+//        rfileFlights.writeChars(fixToWrite("22:30")); //30
+//        rfileFlights.writeInt(1_100_000); //4
+//        rfileFlights.writeInt(12); //4
+//        rfileFlights.writeBoolean(false); // 1byte
+//        rfileFlights.writeBoolean(false);
 
     }
 
@@ -202,10 +202,14 @@ public class Admin extends Files {
                 int index = 0;
                 index = (int) ((rfileFlights.getFilePointer() - 30) / 160);
                 int len = (int) (rfileFlights.length() / 160);
-//                if (!flights[i].isAllow()) { //todo
-//                    System.out.println("Some people has registered this flight.\nYou can't delete this flight!");
-//                    break;
-//                }
+                rfileFlights.seek((countArray2 + 1) * 160L - 2);
+                System.out.println(rfileFlights.getFilePointer());
+                System.out.println(rfileFlights.readBoolean());
+                rfileFlights.seek(rfileFlights.getFilePointer() - 1);
+                if (rfileFlights.readBoolean()) {
+                    System.out.println("Some people has registered this flight.\nYou can't delete this flight!");
+                    break;
+                }
                 shiftArray(index, len);
                 rfileFlights.setLength((len - 1) * 160L);
                 flag = 1;
@@ -321,10 +325,11 @@ public class Admin extends Files {
             rfileFlights.seek(countArray * 160L);
             if (fixToRead(rfileFlights).equals(string)) {
                 flag = 1;
-//                if (!flights[i].isAllow()) { // todo
-//                    System.out.println("Some people has registered this flight.\nYou can't update this flight!");
-//                    break;
-//                }
+                rfileFlights.seek((countArray + 1) * 160L - 2);
+                if (rfileFlights.readBoolean()) {
+                    System.out.println("Some people has registered this flight.\nYou can't delete this flight!");
+                    break;
+                }
 
                 updateOrigin();
 
