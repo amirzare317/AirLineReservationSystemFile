@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.util.Scanner;
 
-public class Welcome {
+public class Welcome{
     /**
      * In this method, the welcome menu will be presented to users.
      * This loop never finish until the you end the program yourself.
@@ -42,7 +42,6 @@ public class Welcome {
                 if (passenger.isRegisteredBefore(userName, password)) {
                     passenger.showPassengerMenu();
                     passenger.passengerOption();
-//                    passenger.defineI(password);
                 } else {
                     System.out.println("Incorrect input !!!");
                 }

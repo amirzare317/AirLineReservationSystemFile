@@ -6,8 +6,6 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Admin extends Files {
-    // Since there are 3 flights as default, the index(i) is 2. So now i starts from 2 and it would increase gradually in each step(i++).
-    int i = 2;
     Scanner input = new Scanner(System.in);
     String string = "";
     String str = "";
@@ -20,13 +18,10 @@ public class Admin extends Files {
         tableOfFlights();
     }
 
-
-
-
     /**
      * Show the Menu of Admin.
      */
-    public void showAdminMenu() {
+    public void showAdminMenu(){
         System.out.println("===========================");
         System.out.println("    Admin MENU OPTIONS");
         System.out.println("===========================");
@@ -41,7 +36,7 @@ public class Admin extends Files {
     /**
      * Just to show the admin menu after each action.
      */
-    public void showAdminMenuAgain() {
+    public void showAdminMenuAgain() throws IOException {
         System.out.println("Press any key to continue...");
         string = input.next();
         System.out.print("\033[H\033[2J");
@@ -98,8 +93,8 @@ public class Admin extends Files {
     public void tableOfFlights() throws IOException {
 
 //        rfileFlights.setLength(0);
-        // Note that the first boolean value is for search and the second boolean value is for allowing to canceling or updating for admin.
-//        // Info of 1st flight
+//        Note that the first boolean value is for search and the second boolean value is for allowing to canceling or updating for admin.
+//         Info of 1st flight
 //        rfileFlights.writeChars(fixToWrite("WX-12"));
 //        rfileFlights.writeChars(fixToWrite("Yazd"));
 //        rfileFlights.writeChars(fixToWrite("Tehran"));
@@ -203,11 +198,10 @@ public class Admin extends Files {
                 index = (int) ((rfileFlights.getFilePointer() - 30) / 160);
                 int len = (int) (rfileFlights.length() / 160);
                 rfileFlights.seek((countArray2 + 1) * 160L - 2);
-                System.out.println(rfileFlights.getFilePointer());
-                System.out.println(rfileFlights.readBoolean());
-                rfileFlights.seek(rfileFlights.getFilePointer() - 1);
+
                 if (rfileFlights.readBoolean()) {
                     System.out.println("Some people has registered this flight.\nYou can't delete this flight!");
+                    flag = 1;
                     break;
                 }
                 shiftArray(index, len);
@@ -221,39 +215,7 @@ public class Admin extends Files {
         }
         if (flag == 0) {
             System.out.println("This flight ID is not valid");
-
-//        RandomAccessFile tempFile = new RandomAccessFile("file1.dat", "rw");
-//        rfileFlights.seek(0);
-//        tempFile.seek(0);
-//        File mainFile = new File("Flights.dat");
-//        File temp = new File("file1.dat");
-//        for (int i = 0; i < (rfileFlights.length() / 160) - 1; i++) {
-//            if ((fixToRead(rfileFlights).equals(string))) {
-//                rfileFlights.seek(rfileFlights.getFilePointer() + 130);
-//
-//            }
-//            else{
-//                rfileFlights.seek(rfileFlights.getFilePointer() - 30);
-//            }
-//            tempFile.writeChars(fixToWrite(fixToRead(rfileFlights)));
-//            tempFile.writeChars(fixToWrite(fixToRead(rfileFlights)));
-//            tempFile.writeChars(fixToWrite(fixToRead(rfileFlights)));
-//            tempFile.writeChars(fixToWrite(fixToRead(rfileFlights)));
-//            tempFile.writeChars(fixToWrite(fixToRead(rfileFlights)));
-//            tempFile.writeInt(rfileFlights.readInt());
-//            tempFile.writeInt(rfileFlights.readInt());
-//            tempFile.writeBoolean(rfileFlights.readBoolean());
-//            tempFile.writeBoolean(rfileFlights.readBoolean());
-//        }
-//            if (mainFile.exists()) {
-//                mainFile.deleteOnExit();
-//                if (temp.exists()){
-//                    temp.renameTo(new File("Flights.dat"));
-//                }
-//                System.out.println("This is temp length: " + temp.length());
-//                System.out.println("This is the tempfile pointer: " + tempFile.getFilePointer());
-//                System.out.println("This is the tempfile length: " + tempFile.length());
-            }
+        }
     }
 
     public void shiftArray(int index, int len) throws IOException {
@@ -268,7 +230,7 @@ public class Admin extends Files {
         boolean state2 = false;
         int fixedIndex = index;
         for (int i = 0; i < (len - fixedIndex) - 1; i++) {
-            rfileFlights.seek((index + 1)* 160L);
+            rfileFlights.seek((index + 1) * 160L);
             flightID = fixToRead(rfileFlights); //30
 
             origin = fixToRead(rfileFlights); //30

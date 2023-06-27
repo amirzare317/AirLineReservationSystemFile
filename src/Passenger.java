@@ -9,23 +9,9 @@ public class Passenger extends Files {
 
     // By creating this instance, you are able to access to the feature of Admin class.
     Admin infoAdmin;
-    // In this array the infos of each passenger will be saved. Note that you can have at most 30 passengers.
-    User[] passengerUser = new User[30];
     String string = "";
     String str = "";
-    User user;
-    // This array is used to show filtering. Note that the maxim length of array is equal to length of flights.
-    Boolean[] showFilterItems;
-
     int userIdentifier;
-
-    // This matrix is created for getting all the information of passengers(likely a local database).
-    // Each row is known as a passenger.
-    // In each column the data of each passenger including the tickets will be stored.
-    private String[][] passengerFlightDetail = new String[15][30];
-
-    // i is the identifier of users.
-    int i = 0;
 
     // lineOrder makes you available to go throw each row of matrix.
     int lineOrder = 0;
@@ -51,7 +37,6 @@ public class Passenger extends Files {
     }
 
     File userFileExist = new File("users.dat");
-
 
     /**
      * Show the Menu of Passenger.
@@ -142,7 +127,7 @@ public class Passenger extends Files {
                     rfileTickets.seek(0);
                     for (int j = 0; j < rfileTickets.length() / 30; j++) {
                         rfileUsers.seek(userIdentifier * 60L + 30);
-                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))){
+                        if (fixToRead(rfileTickets).contains(fixToRead(rfileUsers))) {
                             rfileTickets.seek(rfileTickets.getFilePointer() - 30);
                             System.out.println(fixToRead(rfileTickets));
                         }
@@ -209,11 +194,7 @@ public class Passenger extends Files {
                 rfileTickets.writeChars(fixToWrite(fixToRead(rfileUsers) + "|" + returnFlightId(string) + "|#" + rfileFlights.readInt()));
                 rfileFlights.seek(((n + 1) * 160L) - 2);
                 rfileFlights.writeBoolean(true);
-                System.out.println(rfileFlights.getFilePointer());
-                rfileFlights.seek(rfileFlights.getFilePointer() - 1);
-                System.out.println(rfileFlights.getFilePointer());
-                System.out.println(rfileFlights.readBoolean());
-
+                flag = 1;
             }
             n++;
         }
@@ -222,12 +203,11 @@ public class Passenger extends Files {
         // Since a passenger has bought a ticket, so update the number of seats.
         updateSeat(string);
         lineOrder++;
-        flag = 1;
 
+        if (flag == 0) {
+            System.out.println("This flight doesn't exist");
+        }
     }
-//            if (flag == 0) {
-//            System.out.println("This flight doesn't exist");
-//        }
 
     public String returnFlightId(String string) throws IOException {
         for (int i = 0; i < rfileFlights.length() / 160; i++) {
@@ -250,11 +230,11 @@ public class Passenger extends Files {
         int n = 0;
         rfileTickets.seek(0);
         for (int i = 0; i < (rfileTickets.length() / 30); i++) {
-            if (rfileTickets.length() <= 30){
+            if (rfileTickets.length() <= 30) {
                 rfileTickets.setLength(0);
             }
             String reservationCode = fixToRead(rfileTickets);
-            if (reservationCode.equals(string)){
+            if (reservationCode.equals(string)) {
                 for (int j = 0; j < ((rfileTickets.length() / 30) - n) - 1; j++) {
                     rfileTickets.seek((n + 1) * 30L);
                     String str = fixToRead(rfileTickets);
@@ -355,7 +335,7 @@ public class Passenger extends Files {
         int n = 0;
         for (int i = 0; i < rfileFlights.length() / 160; i++) {
             rfileFlights.seek(n * 160L);
-            if (fixToRead(rfileFlights).equals(str)){
+            if (fixToRead(rfileFlights).equals(str)) {
                 rfileFlights.seek(((n + 1) * 160L) - 2);
                 rfileFlights.writeBoolean(false);
             }
@@ -409,7 +389,9 @@ public class Passenger extends Files {
             rfileFlights.seek(n * 160L);
             if (fixToRead(rfileFlights).equals(string)) {
                 rfileFlights.seek(rfileFlights.getFilePointer() + 124);
-                rfileFlights.writeInt(rfileFlights.readInt() - 1);
+                int charge = rfileFlights.readInt() - 1;
+                rfileFlights.seek(rfileFlights.getFilePointer() - 4);
+                rfileFlights.writeInt(charge);
             }
             n++;
         }
@@ -425,7 +407,7 @@ public class Passenger extends Files {
         int n = 0;
         for (int i = 0; i < rfileFlights.length() / 160; i++) {
             rfileFlights.seek(n * 160L);
-            if (fixToRead(rfileFlights).equals(string)){
+            if (fixToRead(rfileFlights).equals(string)) {
                 rfileFlights.seek((n * 160L) + 154);
                 rfileUsers.seek(userIdentifier * 64L + 60);
                 int charge = rfileUsers.readInt() - rfileFlights.readInt();
@@ -450,7 +432,6 @@ public class Passenger extends Files {
             rfileFlights.writeInt(seat);
             n++;
         }
-
     }
 
     /**
@@ -500,19 +481,6 @@ public class Passenger extends Files {
         }
         return false;
     }
-
-    /*
-     * Since each passenger have its own unique number -> i, to avoid interference we define i.
-     * @param password Every passenger has an unique password, so by giving the password, i can be found easily.
-     */
-//    public void defineI(String password) {
-//        for (int k = 0; k < passengerUser.length; k++) {
-//            if (passengerUser[k] != null && passengerUser[k].getPassword().equals(password)) {
-//                i = k + 1;
-//            }
-//        }
-//    }
-
 
     /**
      * Filtering origin of flight.
